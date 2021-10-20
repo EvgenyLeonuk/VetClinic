@@ -1,0 +1,76 @@
+buildscript {
+    ext {
+        springBootVersion = '1.4.0.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'spring-boot'
+
+jar {
+    baseName = 'pet_clinic'
+    version = '0.0.1-SNAPSHOT'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+   jcenter()
+}
+
+
+configurations {
+    compile.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+
+dependencies {
+    compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+    compile "org.springframework.boot:spring-boot-starter-web-services:${springBootVersion}"
+    compile "org.springframework.boot:spring-boot-starter-log4j2:${springBootVersion}"
+    compile "org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}"
+    compile "org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}"
+    compile "org.mybatis.spring.boot:mybatis-spring-boot-starter:1.1.1"
+    compile "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.6.3"
+    compile "org.apache.poi:poi:3.14"
+    compile "com.lowagie:itext:4.2.1"
+    compile "com.rometools:rome:1.7.0"
+    providedRuntime "org.springframework.boot:spring-boot-starter-tomcat:${springBootVersion}"
+    providedRuntime "org.springframework.boot:spring-boot-devtools:${springBootVersion}"
+    providedRuntime "org.apache.tomcat.embed:tomcat-embed-jasper:8.5.3"
+    providedRuntime "javax.servlet:jstl"
+    providedRuntime "org.hsqldb:hsqldb:2.3.3"
+    providedRuntime "mysql:mysql-connector-java:5.1.39"
+    testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testCompile "org.apache.httpcomponents:httpclient:4.5.2"
+    testCompile "net.sourceforge.htmlunit:htmlunit:2.23"
+}
+
+bootRun {
+    String activeProfile = System.properties['spring.profiles.active']
+    systemProperty "spring.profiles.active", activeProfile
+}
+
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.9'
+}
+
+task stage(type: Copy, dependsOn: [clean, build]) {
+    from war.archivePath
+    into "$buildDir/libs"
+    rename {
+        'app.war'
+    }
+}
+stage.mustRunAfter(clean)
+
+clean << {
+    project.file("$buildDir/libs/app.war").delete()
+}
